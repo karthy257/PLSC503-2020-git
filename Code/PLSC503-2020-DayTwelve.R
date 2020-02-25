@@ -81,7 +81,7 @@ display.gvlmatests(Nope)
 
 pdf("DefaultLMPlots.pdf",10,8)
 par(mfrow=c(2,3))
-plot(Fit,which=c(1:6))
+plot(Fit,which=c(1:6),labels.id=rownames(Africa))
 dev.off()
 
 # Unpacking that:
@@ -89,32 +89,29 @@ dev.off()
 # #1: Residuals vs. fitted, same as:
 
 pdf("ResidVsFitted.pdf",7,6)
-plot(Fit$residuals~Fit$fitted.values,ylab="Residuals",
-     xlab="Fitted Values",main="Residuals vs Fitted")
-abline(h=0,lty=2)
-lines(lowess(Fit$residuals~Fit$fitted.values),lwd=2,
-      col="red")
+par(mar=c(4,4,2,2))
+plot(Fit,which=1,labels.id=rownames(Africa))
 dev.off()
 
 # #2: QQ plot of residuals:
 
 pdf("ResidQQPlot.pdf",6,5)
 par(mar=c(4,4,2,2))
-plot(Fit,which=2)
+plot(Fit,which=2,labels.id=rownames(Africa))
 dev.off()
 
 # #3: Scale-Location plot:
 
 pdf("ScaleLocationPlot.pdf",6,5)
 par(mar=c(4,4,2,2))
-plot(Fit,which=3)
+plot(Fit,which=3,labels.id=rownames(Africa))
 dev.off()
 
 # #4: Cook's Distance (D):
 
 pdf("CooksDPlot.pdf",6,5)
 par(mar=c(4,4,2,2))
-plot(Fit,which=4)
+plot(Fit,which=4,labels.id=rownames(Africa))
 dev.off()
 
 
@@ -122,14 +119,14 @@ dev.off()
 
 pdf("ResidVsLeveragePlot.pdf",6,5)
 par(mar=c(4,4,2,2))
-plot(Fit,which=5)
+plot(Fit,which=5,labels.id=rownames(Africa))
 dev.off()
 
 # #6: Cook's D vs. Leverage:
 
 pdf("CooksDVsLeveragePlot.pdf",6,5)
 par(mar=c(4,4,2,2))
-plot(Fit,which=6)
+plot(Fit,which=6,labels.id=rownames(Africa))
 dev.off()
 
 # Another useful plot:
