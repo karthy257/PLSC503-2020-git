@@ -4,7 +4,131 @@
 # Binary response models, part I
 ######################################################
 
+options(scipen=999)
+options(digits=4)
+par(mar=c(4,4,2,2))
+
 # setwd() as necessary
+
+# A picture of the LPM:
+
+set.seed(7222009)
+ystar<-rnorm(100) # 100 random N(0,1) draws
+y<-ifelse(ystar>0,1,0) # Binary version of Y
+x<-ystar+(0.5*rnorm(100)) # Create X from Y (w/slope=2)
+data<-data.frame(ystar,y,x) # data frame
+
+LPMfit<-lm(y~x)
+
+pdf("LPM.pdf",6,5)
+par(mar=c(4,4,2,2))
+plot(x,y,pch=20,main="",xlab="X",ylab="Y",
+     ylim=c(-0.2,1.2))
+abline(LPMfit,lwd=2.5)
+dev.off()
+
+# Residual plot:
+
+pdf("LPMResids.pdf",6,5)
+par(mar=c(4,4,2,2))
+plot(x,LPMfit$residuals,pch=20,xlab="X",
+     ylab="Residuals")
+dev.off()
+
+#######
+# Standard normal / logistic
+
+x<-seq(-5,5, by=0.01)
+logistic<-dlogis(x)
+lCDF<-plogis(x)
+normal<-dnorm(x)
+nCDF<-pnorm(x)
+
+pdf("LogisticNormalPDFsR.pdf",6,5)
+par(mar=c(4,4,2,2))
+plot(x,normal,xlab="u",t="l",lwd=2,lty=2,col="red",
+     ylab="Probability")
+lines(x,logistic,lwd=2)
+legend("topright",bty="n",legend=c("Standard Logistic",
+                                 "Standard Normal"),
+       lwd=2,lty=c(1,2),col=c("black","red"))
+abline(v=0,lty=3)
+dev.off()
+
+pdf("LogisticNormalCDFsR.pdf",6,5)
+par(mar=c(4,4,2,2))
+plot(x,nCDF,xlab="u",t="l",lwd=2,lty=2,col="red",
+     ylab="Cumulative Probability")
+lines(x,lCDF,lwd=2)
+legend("bottomright",bty="n",legend=c("Standard Logistic",
+                                   "Standard Normal"),
+       lwd=2,lty=c(1,2),col=c("black","red"))
+abline(v=0,lty=3)
+dev.off()
+
+# Odds and log-odds:
+
+Z <- seq(0.02,0.98,by=0.001)
+IZ <- 1 - Z
+O = Z / IZ
+lnO = log(O)
+
+pdf("LogOddsR.pdf",8,5)
+par(mar=c(5,4,2,2))
+par(mfrow=c(1,2))
+plot(O,Z,ylab="Probability of Z",t="l",lwd=2,
+     xlab="Odds of Z: [P(Z) / (1-P(Z))]",
+     ylim=c(0,1),main="Odds")
+abline(h=c(0,1),lty=3)
+plot(lnO,Z,ylab="Probability of Z",t="l",lwd=2,
+     xlab="Log-Odds of Z",
+     ylim=c(0,1),main="Log-Odds")
+abline(h=c(0,1),lty=3)
+dev.off()
+
+# C-log-log
+
+logit<-lCDF
+cloglog1 <- 1 - exp(-exp(x))
+cloglogneg1 <- 1 - exp(-exp(-x))
+
+pdf("CLogLogCDFsR.pdf",6,5)
+par(mfrow=c(1,1))
+par(mar=c(5,4,2,2))
+plot(x,lCDF,xlab="XB",t="l",lwd=2,lty=1,col="black",
+     ylab="Pr(Y=1)")
+lines(x,cloglog1,lwd=2,lty=2,col="red")
+lines(x,cloglogneg1,lwd=2,lty=4,col="blue")
+legend(1,0.6,bty="n",legend=c("Standard Logit (B=1)",
+                               "C-Log-Log (B=1)",
+                              "C-Log-Log (B=-1)"),
+       lwd=2,lty=c(1,2,4),col=c("black","red","blue"),
+       cex=0.8)
+dev.off()
+
+# Scobit... [eyeroll]
+
+SCOOBY <- 1 / ((1 + exp(-2*x))^(1))
+SCOOBY05 <- 1 / ((1 + exp(-2*x))^(0.5))
+SCOOBY02 <- 1 / ((1 + exp(-2*x))^(0.2))
+SCOOBY4 <- 1 / ((1 + exp(-2*x))^(4))
+
+pdf("ScobitCDFsR.pdf",6,5)
+par(mar=c(5,4,2,2))
+plot(x,SCOOBY,xlab="XB",t="l",lwd=2,lty=1,col="black",
+     ylab="Pr(Y=1)")
+lines(x,SCOOBY05,lwd=2,lty=2,col="red")
+lines(x,SCOOBY02,lwd=2,lty=4,col="blue")
+lines(x,SCOOBY4,lwd=2,lty=5,col="orange")
+abline(v=0,lty=3)
+legend("bottomright",bty="n",legend=c("alpha = 1 (logit)",
+          "alpha = 0.5","alpha = 0.2","alpha = 4"),
+       lwd=2,lty=c(1,2,4,5),col=c("black","red","blue","orange"),
+       cex=0.8)
+dev.off()
+
+###################################
+# Toy logit / probit example:
 
 set.seed(7222009)
 ystar<-rnorm(100)
@@ -32,8 +156,10 @@ mylogit<-glm(y~x,family=binomial(link="logit"),
              data=data)
 summary(mylogit)
 
-pdf("LogitProbitHats.pdf",6,5)
+pdf("LogitProbitHats.pdf",5,5)
+par(mar=c(5,4,2,2))
 plot(mylogit$fitted.values,myprobit$fitted.values,
      pch=20,xlab="Logit Predictions",
      ylab="Probit Predictions")
+abline(a=0,b=1,lty=1,col="red")
 dev.off()
