@@ -8,8 +8,10 @@
 
 require(RCurl)
 library(car)
-# install.packages("ROCR") <- as needed
+# install.packages("ROCR") # <- as needed
 library(ROCR)
+# install.packages("pROC") # <- as needed
+library(pROC)
 
 # Options:
 
@@ -67,7 +69,7 @@ NAFTA.GLM.fit$coeff[4]+NAFTA.GLM.fit$coeff[5]
 
 # Same thing, using -linear.hypothesis- in -car-:
 
-linear.hypothesis(NAFTA.GLM.fit,"cope93+DemXCOPE=0")
+linearHypothesis(NAFTA.GLM.fit,"cope93+DemXCOPE=0")
 
 # Predicted values:
 
@@ -82,16 +84,18 @@ plotdata<-cbind(as.data.frame(hats),XBUB,XBLB)
 plotdata<-data.frame(lapply(plotdata,binomial(link="logit")$linkinv))
 par(mfrow=c(1,2))
 library(plotrix)
+with(plotdata, 
 plotCI(cope93[democrat==1],plotdata$fit[democrat==1],ui=plotdata$XBUB[democrat==1],
          li=plotdata$XBLB[democrat==1],pch=20,xlab="COPE Score",ylab="Predicted 
-         Pr(Pro-NAFTA Vote)")
+         Pr(Pro-NAFTA Vote)"))
+with(plotdata, 
 plotCI(cope93[democrat==0],plotdata$fit[democrat==0],ui=plotdata$XBUB[democrat==0],
          li=plotdata$XBLB[democrat==0],pch=20,xlab="COPE Score",ylab="Predicted 
-         Pr(Pro-NAFTA Vote)")
+         Pr(Pro-NAFTA Vote)"))
 
 # Plotting Out-of-sample Predictions:
 
-sim.data<-data.frame(pcthispc=mean(nafta$pcthispc),democrat=rep(0:1,101),
+sim.data<-data.frame(pcthispc=mean(NAFTA$pcthispc),democrat=rep(0:1,101),
                        cope93=seq(from=0,to=100,length.out=101))
 sim.data$DemXCOPE<-sim.data$democrat*sim.data$cope93
 
@@ -134,8 +138,8 @@ lreg.or(NAFTA.GLM.fit)
 ####################
 # Goodness of fit:
 
-table(NAFTA.GLM.fit$fitted.values>0.5,nafta$vote==1)
-chisq.test(NAFTA.GLM.fit$fitted.values>0.5,nafta$vote==1)
+table(NAFTA.GLM.fit$fitted.values>0.5,NAFTA$vote==1)
+chisq.test(NAFTA.GLM.fit$fitted.values>0.5,NAFTA$vote==1)
 
 # ROC curves, plots, etc. (using -ROCR-):
 
@@ -156,3 +160,21 @@ plot(performance(bad.preds,"tpr","fpr"),lwd=2,lty=2,
      col="red",xlab="1 - Specificity",ylab="Sensitivity")
 abline(a=0,b=1,lwd=3)
 
+# Comparing ROCs:
+
+GoodROC<-roc(NAFTA$vote,NAFTA.GLM.logithats,ci=TRUE)
+GoodAUC<-auc(GoodROC)
+BadROC<-roc(NAFTA$vote,NAFTA.bad.hats)
+BadAUC<-auc(BadROC)
+
+GoodAUC
+
+BadAUC
+
+# Comparison plot:
+
+pdf("TwoROCs.pdf",5,5)
+par(mar=c(4,4,2,2))
+plot(GoodROC)
+lines(BadROC,col="red",lty=2)
+dev.off()
